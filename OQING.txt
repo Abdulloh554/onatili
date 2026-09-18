@@ -1,0 +1,18 @@
+VATAN taqdimoti
+
+index.html faylini brauzerda oching (internet ulanishi kerak — rasmlar
+Wikimedia Commons'dan yuklanadi, shriftlar Google Fonts'dan).
+
+BOSHQARUV
+  ← →  yoki Space — varaqlash
+  F — to'liq ekran
+  telefonda — chapga/o'ngga surish
+
+SHE'RLAR
+  8-slaydda [SHEʼR_1 — 1-qator] kabi joylarga she'r qatorlarini yozing
+  va o'sha <p> dan "ph-note" klassini olib tashlang.
+
+RASMNI ALMASHTIRISH
+  Har bir rasm <img src="..."> ichida to'liq havola bilan turadi.
+  O'zingiznikini qo'ymoqchi bo'lsangiz, shu havolani almashtiring.
+  Rasm ochilmasa, o'rnida bayroq rangidagi naqshli fon ko'rinadi.
