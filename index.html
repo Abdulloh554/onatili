@@ -258,6 +258,23 @@ h2.t{font-family:var(--serif);font-weight:700;color:var(--gold);
 .nav button:hover{background:rgba(212,175,55,.3)}
 .nav svg{width:20px;height:20px}
 
+
+/* ============ MUSIQA (YouTube) ============ */
+.mbtn{position:fixed;left:clamp(14px,2.4vw,28px);bottom:16px;z-index:12;display:inline-flex;align-items:center;gap:9px;
+  padding:9px 18px 9px 13px;border-radius:40px;cursor:pointer;border:1px solid rgba(212,175,55,.6);
+  background:rgba(4,40,52,.8);backdrop-filter:blur(5px);font-size:14px;font-weight:600;transition:background .2s}
+.mbtn:hover{background:rgba(212,175,55,.3)}
+.mbtn svg{width:17px;height:17px;fill:var(--gold)}
+.ytbox{position:fixed;left:clamp(14px,2.4vw,28px);bottom:62px;z-index:12;width:clamp(180px,17vw,250px);
+  border-radius:14px;border:2px solid var(--gold);overflow:hidden;background:#04202b;
+  box-shadow:0 14px 34px rgba(0,0,0,.5)}
+.ytbox[hidden]{display:none}
+.ytbox iframe{display:block;width:100%;aspect-ratio:16/9;border:0}
+.ytform{padding:12px;display:flex;flex-direction:column;gap:8px}
+.ytform p{font-size:12px;line-height:1.4;color:var(--muted)}
+.ytform input{padding:8px 10px;border-radius:8px;border:1px solid rgba(212,175,55,.5);background:rgba(255,255,255,.08);color:var(--text);font:inherit;font-size:12px;min-width:0}
+.ytform button{padding:8px;border-radius:8px;border:0;background:var(--gold);color:#08303c;font-weight:700;font-size:13px;cursor:pointer}
+
 /* ============ MOBIL ============ */
 @media (max-width:860px){
   html,body{overflow:hidden}
@@ -316,7 +333,7 @@ function imgFail(el){
         Boshlash
         <svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 4.5v15l13-7.5z"/></svg>
       </button>
-      <p class="hint a" style="--i:6">Strelkalar yoki Space bilan varaqlang. F — toʻliq ekran.</p>
+      <p class="hint a" style="--i:6">Strelkalar yoki Space bilan varaqlang. F — toʻliq ekran, M — musiqa.</p>
     </div>
     <div class="collage">
       <figure class="ph a" style="--i:2"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/8c/RegistanSquare_Samarkand.jpg/1200px-RegistanSquare_Samarkand.jpg" data-fallback="https://commons.wikimedia.org/wiki/Special:FilePath/RegistanSquare_Samarkand.jpg?width=1200" referrerpolicy="no-referrer" alt="Registon maydoni" onerror="imgFail(this)"><figcaption>Registon, Samarqand</figcaption></figure>
@@ -580,6 +597,11 @@ function imgFail(el){
 </main>
 
 <!-- boshqaruv -->
+<button class="mbtn" id="musicBtn" aria-label="Musiqani yoqish">
+  <svg viewBox="0 0 24 24"><path d="M9 17.5V5.2l11-2.2v12.3a3 3 0 1 1-2-2.8V7.2l-7 1.4v8.9a3 3 0 1 1-2-2.8z"/></svg>
+  <span id="mbtnText">Musiqa</span>
+</button>
+<div class="ytbox" id="ytbox" hidden></div>
 <nav class="nav" aria-label="Slaydlar">
   <button id="prevBtn" aria-label="Oldingi slayd"><svg viewBox="0 0 24 24" fill="none" stroke="#F6F4EC" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
   <button id="nextBtn" aria-label="Keyingi slayd"><svg viewBox="0 0 24 24" fill="none" stroke="#F6F4EC" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
@@ -726,6 +748,50 @@ function imgFail(el){
     confRAF = requestAnimationFrame(draw);
   }
 
+
+  /* ---------- Musiqa: YouTube pleyer ---------- */
+  // Havolani shu yerga yozib qo'ysangiz, tugma bosilganda darhol ijro boshlanadi.
+  // Masalan: var YT_URL = "https://www.youtube.com/watch?v=XXXXXXXXXXX";
+  var YT_URL = "";
+  var ytbox = document.getElementById("ytbox"), mbtn = document.getElementById("musicBtn"),
+      mtext = document.getElementById("mbtnText"), playing = false;
+
+  function ytId(u){
+    var m = String(u).match(/(?:v=|youtu\.be\/|embed\/|shorts\/|live\/)([A-Za-z0-9_-]{11})/);
+    return m ? m[1] : (/^[A-Za-z0-9_-]{11}$/.test(String(u).trim()) ? String(u).trim() : null);
+  }
+  function play(id){
+    ytbox.innerHTML = '<iframe src="https://www.youtube.com/embed/' + id +
+      '?autoplay=1&loop=1&playlist=' + id + '&rel=0&modestbranding=1" allow="autoplay; encrypted-media" ' +
+      'referrerpolicy="strict-origin-when-cross-origin" title="Fon musiqasi"></iframe>';
+    ytbox.hidden = false; playing = true; mtext.textContent = "Musiqani oʻchirish";
+    try{ localStorage.setItem("vatan_yt", id); }catch(e){}
+  }
+  function stop(){ ytbox.innerHTML = ""; ytbox.hidden = true; playing = false; mtext.textContent = "Musiqa"; }
+  function askLink(){
+    ytbox.innerHTML = '<div class="ytform"><p>YouTube havolasini qoʻying:</p>' +
+      '<input id="ytin" type="text" placeholder="https://youtu.be/..." inputmode="url">' +
+      '<button id="ytgo">Qoʻyish va ijro etish</button></div>';
+    ytbox.hidden = false;
+    var inp = document.getElementById("ytin");
+    inp.focus();
+    document.getElementById("ytgo").addEventListener("click", function(e){
+      e.stopPropagation();
+      var id = ytId(inp.value);
+      if(id) play(id); else { inp.value = ""; inp.placeholder = "Havola notoʻgʻri, qayta urinib koʻring"; }
+    });
+    ytbox.addEventListener("click", function(e){ e.stopPropagation(); });
+    inp.addEventListener("keydown", function(e){ if(e.key === "Enter"){ e.stopPropagation(); document.getElementById("ytgo").click(); } });
+  }
+  mbtn.addEventListener("click", function(e){
+    e.stopPropagation();
+    if(playing) return stop();
+    var saved = null;
+    try{ saved = localStorage.getItem("vatan_yt"); }catch(err){}
+    var id = ytId(YT_URL) || saved;
+    if(id) play(id); else askLink();
+  });
+
   /* ---------- Navigatsiya ---------- */
   var bar = document.getElementById("bar"), counter = document.getElementById("counter");
   function go(n){
@@ -758,7 +824,7 @@ function imgFail(el){
   });
 
   document.getElementById("deck").addEventListener("click", function(e){
-    if(e.target.closest("button, a, input")) return;
+    if(e.target.closest("button, a, input, .ytbox")) return;
     if(window.getSelection && String(window.getSelection()).length) return;
     next();
   });
@@ -771,6 +837,8 @@ function imgFail(el){
         e.preventDefault(); next(); break;
       case "ArrowLeft": case "ArrowUp": case "PageUp":
         e.preventDefault(); prev(); break;
+      case "m": case "M": case "\u044c": case "\u042c":
+        mbtn.click(); break;
       case "Home": go(0); break;
       case "End": go(slides.length - 1); break;
       case "f": case "F": case "а": case "А":
